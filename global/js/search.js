@@ -1,6 +1,9 @@
 var input = document.getElementById("searchInput");
 var searchquery = "";
 
+var typingTimer;                //timer identifier
+var doneTypingInterval = 250;  //time in ms
+
 function searchGo() {
     console.log("searchGo");
     if (input.value.length > 0) {
@@ -22,26 +25,25 @@ function searchGo() {
             medals.innerHTML = "";
 
             if (json["medals"] != null) {
-                if(json["medals"].length == 0) {
+                if (json["medals"].length == 0) {
                     medals.innerHTML = "<p class='osekai__search-noresults'>" + GetStringRawNonAsync("navbar", "search.noResults") + "</p>";
                 }
                 for (var i = 0; i < json["medals"].length; i++) {
-                    medals.innerHTML += `<a href="/medals/?medal=` + json['medals'][i]["name"] + `" class="search__result search__result-medals">
-                                <img src="` + json['medals'][i]["link"] + `" alt="medal" />
+                    medals.innerHTML += `<a href="/medals/?medal=${json['medals'][i]["name"]}" class="search__result search__result-medals">
+                                <img src="${json['medals'][i]["link"]}" alt="medal" />
                                 <div class="search__result-texts">
-                                    <p class="search__result-text-title">` + json['medals'][i]["name"] + `</p>
-                                    <p class="search__result-text-subtitle">` + json['medals'][i]["description"] + `</p>
+                                    <p class="search__result-text-title">${json['medals'][i]["name"]}</p>
+                                    <p class="search__result-text-subtitle">${json['medals'][i]["description"]}</p>
                                 </div>
                             </a>`;
                 }
-            } 
-
+            }
 
             var profiles = document.getElementById("profilesResult");
             profiles.innerHTML = "";
 
             if (json["profiles"] != null) {
-                if(json["profiles"].length == 0) {
+                if (json["profiles"].length == 0) {
                     profiles.innerHTML = "<p class='osekai__search-noresults'>" + GetStringRawNonAsync("navbar", "search.noResults") + "</p>";
                 }
                 for (var i = 0; i < json["profiles"].length; i++) {
@@ -59,7 +61,7 @@ function searchGo() {
             snapshots.innerHTML = "";
 
             if (json["snapshots"] != null) {
-                if(json["snapshots"].length == 0) {
+                if (json["snapshots"].length == 0) {
                     snapshots.innerHTML = "<p class='osekai__search-noresults'>" + GetStringRawNonAsync("navbar", "search.noResults") + "</p>";
                 }
                 for (var i = 0; i < json["snapshots"].length; i++) {
@@ -70,7 +72,7 @@ function searchGo() {
                                 </div>
                             </a>`;
                 }
-            } 
+            }
             //document.getElementById("loaderContainer").classList.add("search__loader-container-closed");
         }
         document.getElementById("search_loader").classList.add("hidden");
@@ -80,19 +82,14 @@ function searchGo() {
 }
 
 input.addEventListener("keyup", function (evt) {
-    if (searchquery != input.value) {
-        searchquery = input.value;
-        let currentquery = input.value;
-        window.setTimeout(function(){
-            if(currentquery == searchquery) {
-            searchGo();
-            } else {
-                console.log(currentquery + " is no longer " + searchquery)
-            }
-          },250);
-        
-    }
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(searchGo, doneTypingInterval);
+    searchquery = input.value;
 }, false);
+
+input.addEventListener("keydown", (evt) => {
+    clearTimeout(typingTimer);
+})
 
 input.addEventListener("focusout", function (evt) {
     if (input.value.length == 0) {
